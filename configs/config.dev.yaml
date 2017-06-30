@@ -1,0 +1,22 @@
+server:
+  host: 127.0.0.1
+  port: 16649
+  disable_auth: True
+
+db: &db
+  conn:
+    kwargs:
+      scheme: mysql+pymysql
+      user: root
+      password: ""
+      host: 127.0.0.1
+      database: oncall
+      charset: utf8
+    str: "%(scheme)s://%(user)s:%(password)s@%(host)s/%(database)s?charset=%(charset)s"
+  query_limit: 500
+  kwargs:
+    pool_recycle: 3600
+    echo: False
+    pool_size: 100
+    max_overflow: 100
+    pool_timeout: 60
