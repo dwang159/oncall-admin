@@ -82,12 +82,13 @@ function init_oncall_admin() {
     $save_user_button.prop('disabled', 'true');
 
     var contacts = {};
-    $('#user-edit').find('input[type=text]').each(function() {
+    $('#user-edit').find('.contacts').each(function() {
       var $this = $(this), mode = $this.data('mode'), val = $(this).val();
       contacts[mode] = val;
     });
 
     var info = {
+      full_name: $('#full_name').val(),
       contacts: contacts,
       admin: $('#admin').prop('checked'),
       active: $('#active').prop('checked')
