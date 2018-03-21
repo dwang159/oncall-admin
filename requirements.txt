@@ -18,3 +18,4 @@ six==1.10.0
 SQLAlchemy==1.0.11
 phonenumbers==7.4.1
 ujson==1.35
+pythonldap==2.4.9
