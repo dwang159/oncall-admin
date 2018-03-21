@@ -1,4 +1,4 @@
-from oncall_admin import db
+from oncall_admin import db, ldap_user
 import falcon
 from falcon import HTTPNotFound
 import ujson
@@ -89,6 +89,37 @@ class UsersList:
         cursor = connection.cursor(db.dict_cursor)
         cursor.execute('INSERT INTO `user` (`name`, `active`) VALUES (%s, TRUE)', username)
         user_id = cursor.lastrowid
+
+        ldap_info = ldap_user.get_ldap_user(username)
+        if ldap_info:
+            contacts = ldap_info[username]
+            full_name = contacts.pop('full_name')
+            cursor.execute('''
+                UPDATE `user` SET `full_name` = %s
+                WHERE `name` = %s
+                LIMIT 1
+            ''', [full_name, username])
+            for mode, destination in contacts.iteritems():
+                destination = destination.strip()
+                if mode in ('call', 'sms'):
+                    try:
+                        old_destination = destination
+                        destination = normalize_phone_number(destination)
+                        if old_destination != destination:
+                            logger.info('Normalized %s to %s', old_destination, destination)
+                    except Exception:
+                        logger.exception('Failed normalizing phone number %s', destination)
+                logger.info("Adding %s:%s for user %s", mode, destination, username)
+                cursor.execute('''INSERT INTO `user_contact` (`user_id`, `mode_id`, `destination`)
+                                VALUES (
+                                          (SELECT `id` FROM `user` WHERE `name` = %(username)s),
+                                          (SELECT `id` FROM `contact_mode` WHERE `name` = %(mode)s),
+                                          %(destination)s)
+                                  ON DUPLICATE KEY UPDATE `destination` = %(destination)s''',
+                               {'username': username, 'mode': mode, 'destination': destination})
+        else:
+            logger.info("User '%s' not found in ldap.", username)
+
         cursor.close()
         connection.commit()
         connection.close()
@@ -179,7 +210,10 @@ def get_app():
     config_file = os.environ.get('CONFIG')
     with open(config_file) as h:
         config = yaml.load(h.read())
+
     db.init(config)
+    ldap_user.init(config.get('ldap'))
+
     api = falcon.API()
     api.add_route('/static/{filename}', StaticResource('/static'))
     api.add_route('/api/users', UsersList())
