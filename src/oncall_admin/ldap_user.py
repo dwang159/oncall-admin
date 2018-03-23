@@ -15,6 +15,7 @@ def init(config):
     global user_suffix
     global attrs
 
+    connection = None
     if not config:
         return
 
