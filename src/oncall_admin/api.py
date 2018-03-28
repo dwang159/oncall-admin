@@ -64,7 +64,7 @@ class UsersList:
 
         startswith = req.get_param('startswith')
 
-        query = '''SELECT `user`.`name`, `user`.`god` AS `admin`, `user`.`active`
+        query = '''SELECT `user`.`name`, `user`.`god` AS `admin`, `user`.`active`, `user`.`full_name`
                    FROM `user`'''
         wheres = []
 
