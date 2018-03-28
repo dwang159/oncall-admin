@@ -51,6 +51,7 @@
     <thead>
       <tr>
         <th>Name</th>
+        <th>Full Name</th>
         <th>Active</th>
         <th>Admin</th>
       </tr>
@@ -59,6 +60,7 @@
       {{#each users}}
       <tr>
         <td><a data-navigo href="/user/{{name}}">{{name}}</a></td>
+        <td>{{full_name}}</td>
         <td>{{booltostr active}}</td>
         <td>{{booltostr admin}}</td>
       </tr>
