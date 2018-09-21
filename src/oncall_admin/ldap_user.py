@@ -2,11 +2,18 @@
 # See LICENSE in the project root for license information.
 
 import ldap
-from oncall import db
+from oncall_admin import db
 import os
 import logging
 
 logger = logging.getLogger(__name__)
+
+connection = None
+base_dn = None
+search_filter = None
+user_suffix = None
+attrs = None
+
 
 def init(config):
     global connection
@@ -15,8 +22,7 @@ def init(config):
     global user_suffix
     global attrs
 
-    connection = None
-    if not config:
+    if not config or not config.get('activated'):
         return
 
     if config.get('ldap_cert_path'):

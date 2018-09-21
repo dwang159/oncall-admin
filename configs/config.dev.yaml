@@ -22,6 +22,7 @@ db: &db
     pool_timeout: 60
 
 ldap:
+  activated: False
   ldap_url: 'ldaps://ldap.company.com:636'
   ldap_cert_path: '/etc/ldap_cert.pem'
   ldap_bind_user: 'cn=binduser,ou=services,dc=company,dc=org'
