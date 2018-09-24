@@ -131,7 +131,8 @@ class User():
     def on_get(self, req, resp, username):
         connection = db.engine.raw_connection()
         cursor = connection.cursor(db.dict_cursor)
-        cursor.execute('''SELECT `user`.`name`, `user`.`god` AS `admin`, `user`.`active`, `user`.`full_name`
+        cursor.execute('''SELECT `user`.`name`, `user`.`god` AS `admin`, `user`.`active`,
+                          `user`.`full_name`, `user`.`photo_url`
                           FROM `user`
                           WHERE `user`.`name` = %s''', username)
         info = cursor.fetchone()
@@ -160,10 +161,10 @@ class User():
         connection = db.engine.raw_connection()
         cursor = connection.cursor(db.dict_cursor)
         cursor.execute('''
-            UPDATE `user` SET `active` = %s, `god` = %s, `full_name` = %s
+            UPDATE `user` SET `active` = %s, `god` = %s, `full_name` = %s, `photo_url` = %s
             WHERE `name` = %s
             LIMIT 1
-        ''', [info['active'], info['admin'], info['full_name'], username])
+        ''', [info['active'], info['admin'], info['full_name'], info['photo_url'], username])
         for mode, destination in contacts.iteritems():
 
             destination = destination.strip()

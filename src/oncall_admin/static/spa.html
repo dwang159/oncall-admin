@@ -88,6 +88,10 @@
         <td>{{this}}</td>
       </tr>
       {{/each}}
+      <tr>
+        <td>Photo URL</td>
+        <td><a href="{{info.photo_url}}">{{info.photo_url}}</a></td>
+      </tr>
     </tbody>
   </table>
   Admin: <input disabled type="checkbox" id="admin"{{#if info.admin}}checked{{/if}}><br>
@@ -116,6 +120,10 @@
           <td><input type="text" class="contacts" data-mode="{{@key}}" value="{{this}}"></td>
         </tr>
         {{/each}}
+        <tr>
+          <td>Photo URL</td>
+          <td><input type="text" id="photo_url" value="{{info.photo_url}}"></td>
+        </tr>
       </tbody>
     </table>
 

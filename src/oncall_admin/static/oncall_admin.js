@@ -89,6 +89,7 @@ function init_oncall_admin() {
 
     var info = {
       full_name: $('#full_name').val(),
+      photo_url: $('#photo_url').val(),
       contacts: contacts,
       admin: $('#admin').prop('checked'),
       active: $('#active').prop('checked')
