@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  oncall-admin:
+    build: .
+    hostname: oncall-admin
+    ports:
+      - "16652:16652"
+    volumes:
+      - ./configs/config.dev.yaml:/home/oncall-admin/config/config.yaml
+    networks:
+      - iris
+
+networks:
+  iris:
+    name: iris

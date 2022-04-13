@@ -51,14 +51,14 @@ class StaticResource(object):
         filepath = os.path.join(ui_root, self.path, secure_filename(filename))
         try:
             resp.stream = open(filepath, 'rb')
-            resp.stream_len = os.path.getsize(filepath)
+            resp.content_length = os.path.getsize(filepath)
         except IOError:
             raise HTTPNotFound()
 
 
 class UsersList:
     def on_get(self, req, resp):
-        start_at = req.get_param_as_int('startat', min=0)
+        start_at = req.get_param_as_int('startat', min_value=0)
         if not start_at:
             start_at = 0
 
@@ -78,7 +78,7 @@ class UsersList:
         connection = db.engine.raw_connection()
         cursor = connection.cursor(db.dict_cursor)
         cursor.execute(query, wheres)
-        resp.body = ujson.dumps(cursor)
+        resp.body = ujson.dumps(cursor.fetchall())
         cursor.close()
         connection.close()
 
@@ -114,7 +114,7 @@ class UsersList:
                     cursor.execute('''INSERT INTO `user_contact` (`user_id`, `mode_id`, `destination`)
                                     VALUES (
                                               (SELECT `id` FROM `user` WHERE `name` = %(username)s),
-                                              (SELECT `id` FROM `contact_mode` WHERE `name` = %(mode)s),
+                                              (SELECT `id` FROM `contact_mode` WHERE `name` = %(mode)s LIMIT 1),
                                               %(destination)s)
                                       ON DUPLICATE KEY UPDATE `destination` = %(destination)s''',
                                    {'username': username, 'mode': mode, 'destination': destination})
@@ -135,7 +135,9 @@ class User():
                           `user`.`full_name`, `user`.`photo_url`
                           FROM `user`
                           WHERE `user`.`name` = %s''', username)
-        info = cursor.fetchone()
+        received = cursor.fetchone() or {}
+        default_info = {"active":"","admin":"","full_name":"","photo_url":""}
+        info = {**default_info, **received}
         cursor.close()
 
         cursor = connection.cursor()
@@ -156,8 +158,10 @@ class User():
         resp.body = ujson.dumps(info)
 
     def on_put(self, req, resp, username):
-        info = ujson.loads(req.stream.read())
-        contacts = info['contacts']
+        default_info = {"active":"","admin":"","full_name":"","photo_url":""}
+        received = ujson.loads(req.stream.read())
+        info = {**default_info, **received}
+        contacts = info.get('contacts', {})
         connection = db.engine.raw_connection()
         cursor = connection.cursor(db.dict_cursor)
         cursor.execute('''
@@ -165,7 +169,7 @@ class User():
             WHERE `name` = %s
             LIMIT 1
         ''', [info['active'], info['admin'], info['full_name'], info['photo_url'], username])
-        for mode, destination in contacts.iteritems():
+        for mode, destination in contacts.items():
 
             destination = destination.strip()
             if mode in ('call', 'sms'):
@@ -180,7 +184,7 @@ class User():
             cursor.execute('''INSERT INTO `user_contact` (`user_id`, `mode_id`, `destination`)
                               VALUES (
                                       (SELECT `id` FROM `user` WHERE `name` = %(username)s),
-                                      (SELECT `id` FROM `contact_mode` WHERE `name` = %(mode)s),
+                                      (SELECT `id` FROM `contact_mode` WHERE `name` = %(mode)s LIMIT 1),
                                       %(destination)s)
                               ON DUPLICATE KEY UPDATE `destination` = %(destination)s''',
                            {'username': username, 'mode': mode, 'destination': destination})
@@ -211,7 +215,7 @@ def get_app():
                         level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S %z')
     config_file = os.environ.get('CONFIG')
     with open(config_file) as h:
-        config = yaml.load(h.read())
+        config = yaml.load(h.read(), Loader=yaml.Loader)
 
     db.init(config)
     ldap_user.init(config.get('ldap'))

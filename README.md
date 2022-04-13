@@ -18,7 +18,7 @@ Creating a user:
 
     virtualenv env
     . env/bin/activate
-    python setup.py develop
+    python3 setup.py develop
 
 
 ### Usage

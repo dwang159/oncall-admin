@@ -33,7 +33,7 @@ function delete_user(username, callback) {
 
 function create_user(username, callback) {
   $.ajax({
-        url: '/api/users/',
+        url: '/api/users',
         data: JSON.stringify({username: username}),
         method: 'POST',
         contentType: 'application/json'
