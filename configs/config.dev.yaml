@@ -1,6 +1,6 @@
 server:
   host: 127.0.0.1
-  port: 16649
+  port: 16652
   disable_auth: True
 
 db: &db
